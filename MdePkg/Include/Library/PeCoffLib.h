@@ -188,6 +188,11 @@ typedef struct {
   ///
   BOOLEAN                     IsTeImage;
   ///
+  /// Set by PeCoffLoaderGetImageInfo() to TRUE if the image has the IMAGE_DLLCHARACTERISTICS_NX_COMPAT
+  /// flag set.
+  ///
+  BOOLEAN                     SupportsNx;
+  ///
   /// Set by PeCoffLoaderLoadImage() to the HII resource offset
   /// if the image contains a custom PE/COFF resource with the type 'HII'.
   /// Otherwise, the entry remains to be 0.

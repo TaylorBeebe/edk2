@@ -1128,6 +1128,7 @@ DxeMemoryProtectionHobLib|MdeModulePkg/Library/MemoryProtectionHobLibNull/DxeMem
 !include OvmfPkg/Include/Dsc/OvmfTpmComponentsDxe.dsc.inc
 
 # Force PE/COFF sections to be aligned at 4KB boundaries to support page level
-# protection of modules
+# protection of modules. Updating the subsystem allows us to set the NX_COMPAT DLL
+# flag, but this is a temporary hack. The proper solution is a build plugin.
 [BuildOptions.common.EDKII.DXE_SMM_DRIVER, BuildOptions.common.EDKII.DXE_RUNTIME_DRIVER, BuildOptions.common.EDKII.SMM_CORE, BuildOptions.common.EDKII.DXE_DRIVER, BuildOptions.common.EDKII.DXE_CORE, BuildOptions.common.EDKII.UEFI_DRIVER, BuildOptions.common.EDKII.UEFI_APPLICATION, BuildOptions.common.EDKII.MM_CORE_STANDALONE, BuildOptions.common.EDKII.MM_STANDALONE]
-  MSFT:*_*_*_DLINK_FLAGS = /ALIGN:4096
+  MSFT:*_*_*_DLINK_FLAGS = /ALIGN:4096 /SUBSYSTEM:CONSOLE /DLL /NXCOMPAT

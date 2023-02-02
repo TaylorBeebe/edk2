@@ -579,6 +579,8 @@ CoreIsImageTypeSupported (
                                   relocate the PE/COFF file
   @retval EFI_INVALID_PARAMETER   Invalid parameter
   @retval EFI_BUFFER_TOO_SMALL    Buffer for image is too small
+  @retval EFI_SECURITY_VIOLATION  NXCOMPAT flag not set on image and it is
+                                  of subsystem type EFI_APPLICATION
 
 **/
 EFI_STATUS
@@ -642,6 +644,18 @@ CoreLoadPeImage (
     default:
       Image->ImageContext.ImageError = IMAGE_ERROR_INVALID_SUBSYSTEM;
       return EFI_UNSUPPORTED;
+  }
+
+  // If the image doesn't have the NXCOMPAT flag and is an EFI_APPLICATION subsystem, it could be a boot
+  // loader or 3rd party binary which isn't NX aware. Because of this, we need to ensure future allocations
+  // of code memory types aren't set to NX in case this image does its own allocations.
+  // Or, if our memory protection policy specifies that we shouldn't allow such images, return a failure.
+  if (!(Image->ImageContext.SupportsNx) && (Image->ImageContext.ImageType == EFI_IMAGE_SUBSYSTEM_EFI_APPLICATION)) {
+    if (gDxeMps.ImageProtectionPolicy.Fields.BlockImagesWithoutNxFlag) {
+      return EFI_SECURITY_VIOLATION;
+    }
+
+    TurnOffNxCompatibility ();
   }
 
   //

@@ -25,6 +25,8 @@ MEMORY_PROTECTION_SPECIAL_REGION_PRIVATE_LIST_HEAD  mSpecialMemoryRegionsPrivate
   INITIALIZE_LIST_HEAD_VARIABLE (mSpecialMemoryRegionsPrivate.SpecialRegionList)
 };
 
+BOOLEAN                        mIsSystemNxCompatible    = TRUE;
+
 #define IS_BITMAP_INDEX_SET(Bitmap, Index)  ((((UINT8*)Bitmap)[Index / 8] & (1 << (Index % 8))) != 0 ? TRUE : FALSE)
 #define SET_BITMAP_INDEX(Bitmap, Index)     (((UINT8*)Bitmap)[Index / 8] |= (1 << (Index % 8)))
 
@@ -3185,4 +3187,79 @@ MemoryProtectionCpuArchProtocolNotify (
 
 Done:
   CoreCloseEvent (Event);
+}
+
+/**
+  Clears the attributes from a memory range.
+
+  @param  BaseAddress            The base address of the pages which need their attributes cleared
+  @param  Length                 Length in bytes
+
+  @retval EFI_SUCCESS            Attributes updated if necessary
+  @retval EFI_INVALID_PARAMETER  BaseAddress is NULL or Length is zero
+  @retval EFI_NOT_READY          Cpu Arch is not installed yet
+  @retval Other                  Return value of CoreGetMemorySpaceDescriptor()
+
+**/
+EFI_STATUS
+EFIAPI
+ClearAccessAttributesFromMemoryRange (
+  IN EFI_PHYSICAL_ADDRESS  BaseAddress,
+  IN UINTN                 Length
+  )
+{
+  EFI_GCD_MEMORY_SPACE_DESCRIPTOR  Desc;
+  EFI_STATUS                       Status;
+
+  if (gCpu == NULL) {
+    return EFI_NOT_READY;
+  }
+
+  if (((VOID *)((UINTN)BaseAddress) == NULL) || (Length == 0)) {
+    return EFI_INVALID_PARAMETER;
+  }
+
+  Status = CoreGetMemorySpaceDescriptor (
+             BaseAddress,
+             &Desc
+             );
+
+  if (!EFI_ERROR (Status)) {
+    SetUefiImageMemoryAttributes (
+      BaseAddress,
+      Length,
+      0
+      );
+  }
+
+  return Status;
+}
+
+/**
+  Sets the NX compatibility global to FALSE so future checks to
+  IsSystemNxCompatible() will return FALSE.
+**/
+VOID
+EFIAPI
+TurnOffNxCompatibility (
+  VOID
+  )
+{
+  if (mIsSystemNxCompatible) {
+    DEBUG ((DEBUG_INFO, "%a - Setting Nx on Code types to FALSE\n", __FUNCTION__));
+  }
+
+  mIsSystemNxCompatible = FALSE;
+}
+
+/**
+  Returns TRUE if TurnOffNxCompatibility() has never been called.
+**/
+BOOLEAN
+EFIAPI
+IsSystemNxCompatible (
+  VOID
+  )
+{
+  return mIsSystemNxCompatible;
 }
