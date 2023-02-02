@@ -38,6 +38,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 #include <Protocol/FirmwareVolume2.h>
 #include <Protocol/SimpleFileSystem.h>
+#include <Protocol/MemoryAttribute.h>
 
 #include "DxeMain.h"
 #include "Mem/HeapGuard.h"
@@ -55,7 +56,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #define PREVIOUS_MEMORY_DESCRIPTOR(MemoryDescriptor, Size) \
   ((EFI_MEMORY_DESCRIPTOR *)((UINT8 *)(MemoryDescriptor) - (Size)))
 
-extern LIST_ENTRY  mGcdMemorySpaceMap;
+extern LIST_ENTRY                     mGcdMemorySpaceMap;
 
 /**
   Check if code section in image record is valid.
@@ -567,6 +568,7 @@ CoreInitializeMemoryProtection (
 {
   EFI_STATUS  Status;
   EFI_EVENT   Event;
+  EFI_EVENT   MemoryAttributeProtocolEvent;
   VOID        *Registration;
 
   //
@@ -594,6 +596,25 @@ CoreInitializeMemoryProtection (
   Status = CoreRegisterProtocolNotify (
              &gEfiCpuArchProtocolGuid,
              Event,
+             &Registration
+             );
+  ASSERT_EFI_ERROR (Status);
+
+  Status = CoreCreateEvent (
+             EVT_NOTIFY_SIGNAL,
+             TPL_CALLBACK,
+             MemoryAttributeProtocolNotify,
+             NULL,
+             &MemoryAttributeProtocolEvent
+             );
+  ASSERT_EFI_ERROR (Status);
+
+  //
+  // Register for protocol notification
+  //
+  Status = CoreRegisterProtocolNotify (
+             &gEfiMemoryAttributeProtocolGuid,
+             MemoryAttributeProtocolEvent,
              &Registration
              );
   ASSERT_EFI_ERROR (Status);
@@ -702,15 +723,15 @@ ApplyMemoryProtectionPolicy (
   //
   NewAttributes = GetPermissionAttributeForMemoryType (NewType);
 
-  if (OldType != EfiMaxMemoryType) {
-    OldAttributes = GetPermissionAttributeForMemoryType (OldType);
-    if (OldAttributes == NewAttributes) {
-      // policy is the same between OldType and NewType
+  // To catch the edge case where the attributes are not consistent across the range, get the
+  // attributes from the page table to see if they are consistent. If they are not consistent,
+  // GetMemoryAttributes() will return an error.
+  if (MemoryAttributeProtocol != NULL) {
+    if (!EFI_ERROR (MemoryAttributeProtocol->GetMemoryAttributes (MemoryAttributeProtocol, Memory, Length, &OldAttributes)) &&
+        (OldAttributes == NewAttributes))
+    {
       return EFI_SUCCESS;
     }
-  } else if (NewAttributes == 0) {
-    // newly added region of a type that does not require protection
-    return EFI_SUCCESS;
   }
 
   return gCpu->SetMemoryAttributes (gCpu, Memory, Length, NewAttributes);

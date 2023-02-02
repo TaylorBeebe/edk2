@@ -1272,6 +1272,8 @@ InitializeCpu (
                   );
   ASSERT_EFI_ERROR (Status);
 
+  InstallEfiMemoryAttributeProtocol ();
+
   //
   // Refresh GCD memory space map according to MTRR value.
   //

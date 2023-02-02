@@ -36,6 +36,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #include <Protocol/Security2.h>
 #include <Protocol/Reset.h>
 #include <Protocol/Cpu.h>
+#include <Protocol/MemoryAttribute.h>
 #include <Protocol/Metronome.h>
 #include <Protocol/FirmwareVolumeBlock.h>
 #include <Protocol/Capsule.h>
@@ -270,6 +271,7 @@ extern EFI_SECURITY_ARCH_PROTOCOL        *gSecurity;
 extern EFI_SECURITY2_ARCH_PROTOCOL       *gSecurity2;
 extern EFI_BDS_ARCH_PROTOCOL             *gBds;
 extern EFI_SMM_BASE2_PROTOCOL            *gSmmBase2;
+extern EFI_MEMORY_ATTRIBUTE_PROTOCOL     *MemoryAttributeProtocol;
 
 extern EFI_TPL  gEfiCurrentTpl;
 

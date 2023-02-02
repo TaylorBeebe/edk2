@@ -63,6 +63,7 @@
 [Protocols]
   gEfiCpuArchProtocolGuid                       ## PRODUCES
   gEfiMpServiceProtocolGuid                     ## PRODUCES
+  gEfiMemoryAttributeProtocolGuid               ## PRODUCES
   gEfiSmmBase2ProtocolGuid                      ## SOMETIMES_CONSUMES
 
 [Guids]
