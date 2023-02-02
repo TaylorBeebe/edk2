@@ -35,12 +35,17 @@ HandOffToDxeCore (
   EFI_PEI_VECTOR_HANDOFF_INFO_PPI  *VectorHandoffInfoPpi;
   VOID                             *GhcbBase;
   UINTN                            GhcbSize;
+  BOOLEAN                          CanUpdate;
+
+  CanUpdate = CanUpdatePageZero (HobList.Raw);
+  ASSERT (CanUpdate == TRUE);
 
   //
   // Clear page 0 and mark it as allocated if NULL pointer detection is enabled.
   //
-  if (IsNullDetectionEnabled ()) {
-    ClearFirst4KPage (HobList.Raw);
+  if (CanUpdate) {
+    DEBUG ((DEBUG_INFO, "Clearing first 4K-page!\r\n"));
+    SetMem (NULL, EFI_PAGE_SIZE, 0);
     BuildMemoryAllocationHob (0, EFI_PAGES_TO_SIZE (1), EfiBootServicesData);
   }
 
@@ -89,24 +94,15 @@ HandOffToDxeCore (
   GhcbSize = PcdGet64 (PcdGhcbSize);
 
   PageTables = 0;
-  if (FeaturePcdGet (PcdDxeIplBuildPageTables)) {
-    //
-    // Create page table and save PageMapLevel4 to CR3
-    //
-    PageTables = CreateIdentityMappingPageTables (
-                   (EFI_PHYSICAL_ADDRESS)(UINTN)BaseOfStack,
-                   STACK_SIZE,
-                   (EFI_PHYSICAL_ADDRESS)(UINTN)GhcbBase,
-                   GhcbSize
-                   );
-  } else {
-    //
-    // Set NX for stack feature also require PcdDxeIplBuildPageTables be TRUE
-    // for the DxeIpl and the DxeCore are both X64.
-    //
-    ASSERT (PcdGetBool (PcdSetNxForStack) == FALSE);
-    ASSERT (PcdGetBool (PcdCpuStackGuard) == FALSE);
-  }
+  //
+  // Create page table and save PageMapLevel4 to CR3
+  //
+  PageTables = CreateIdentityMappingPageTables (
+                 (EFI_PHYSICAL_ADDRESS)(UINTN)BaseOfStack,
+                 STACK_SIZE,
+                 (EFI_PHYSICAL_ADDRESS)(UINTN)GhcbBase,
+                 GhcbSize
+                 );
 
   //
   // End of PEI phase signal
@@ -114,10 +110,7 @@ HandOffToDxeCore (
   Status = PeiServicesInstallPpi (&gEndOfPeiSignalPpi);
   ASSERT_EFI_ERROR (Status);
 
-  if (FeaturePcdGet (PcdDxeIplBuildPageTables)) {
-    AsmWriteCr3 (PageTables);
-  }
-
+  AsmWriteCr3 (PageTables);
   //
   // Update the contents of BSP stack HOB to reflect the real stack info passed to DxeCore.
   //

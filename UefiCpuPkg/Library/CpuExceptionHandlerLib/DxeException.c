@@ -12,6 +12,8 @@
 #include <Library/MemoryAllocationLib.h>
 #include <Library/UefiBootServicesTableLib.h>
 
+#include <Library/DxeMemoryProtectionHobLib.h>
+
 CONST UINTN  mDoFarReturnFlag = 0;
 
 RESERVED_VECTORS_DATA      mReservedVectorsData[CPU_INTERRUPT_NUM];

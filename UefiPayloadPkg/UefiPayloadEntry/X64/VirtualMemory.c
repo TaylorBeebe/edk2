@@ -115,7 +115,7 @@ IsNullDetectionEnabled (
   VOID
   )
 {
-  return ((PcdGet8 (PcdNullPointerDetectionPropertyMask) & BIT0) != 0);
+  return TRUE;
 }
 
 /**
@@ -169,9 +169,7 @@ IsEnableNonExecNeeded (
   // XD flag (BIT63) in page table entry is only valid if IA32_EFER.NXE is set.
   // Features controlled by Following PCDs need this feature to be enabled.
   //
-  return (PcdGetBool (PcdSetNxForStack) ||
-          PcdGet64 (PcdDxeNxMemoryProtectionPolicy) != 0 ||
-          PcdGet32 (PcdImageProtectionPolicy) != 0);
+  return TRUE;
 }
 
 /**
@@ -398,16 +396,15 @@ Split2MPageTo4K (
 
     PageTableEntry->Bits.ReadWrite = 1;
 
-    if ((IsNullDetectionEnabled () && (PhysicalAddress4K == 0)) ||
-        (PcdGetBool (PcdCpuStackGuard) && (PhysicalAddress4K == StackBase)))
-    {
+    if ((IsNullDetectionEnabled () && (PhysicalAddress4K == 0)) || (PhysicalAddress4K == StackBase)) {
       PageTableEntry->Bits.Present = 0;
     } else {
       PageTableEntry->Bits.Present = 1;
     }
 
-    if (  PcdGetBool (PcdSetNxForStack)
-       && (PhysicalAddress4K >= StackBase)
+    if (  // PcdGetBool (PcdSetNxForStack)
+          //  &&
+          (PhysicalAddress4K >= StackBase)
        && (PhysicalAddress4K < StackBase + StackSize))
     {
       //

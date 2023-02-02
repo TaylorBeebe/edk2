@@ -39,10 +39,8 @@ HandOffToDxeCore (
   BaseOfStack = AllocatePages (EFI_SIZE_TO_PAGES (STACK_SIZE));
   ASSERT (BaseOfStack != NULL);
 
-  if (PcdGetBool (PcdSetNxForStack)) {
-    Status = ArmSetMemoryRegionNoExec ((UINTN)BaseOfStack, STACK_SIZE);
-    ASSERT_EFI_ERROR (Status);
-  }
+  Status = ArmSetMemoryRegionNoExec ((UINTN)BaseOfStack, STACK_SIZE);
+  ASSERT_EFI_ERROR (Status);
 
   //
   // Compute the top of the stack we were allocated. Pre-allocate a UINTN

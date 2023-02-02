@@ -250,6 +250,17 @@
 
 !include OvmfPkg/Include/Dsc/OvmfTpmLibs.dsc.inc
 
+DxeMemoryProtectionHobLib|MdeModulePkg/Library/MemoryProtectionHobLibNull/DxeMemoryProtectionHobLibNull.inf
+
+[LibraryClasses.common.DXE_DRIVER, LibraryClasses.common.DXE_CORE, LibraryClasses.common.UEFI_APPLICATION]
+  DxeMemoryProtectionHobLib|MdeModulePkg/Library/MemoryProtectionHobLib/DxeMemoryProtectionHobLib.inf
+
+[LibraryClasses.common.SMM_CORE, LibraryClasses.common.DXE_SMM_DRIVER]
+  MmMemoryProtectionHobLib|MdeModulePkg/Library/MemoryProtectionHobLib/SmmMemoryProtectionHobLib.inf
+
+[LibraryClasses.common.MM_CORE_STANDALONE, LibraryClasses.common.MM_STANDALONE]
+  MmMemoryProtectionHobLib|MdeModulePkg/Library/MemoryProtectionHobLib/StandaloneMmMemoryProtectionHobLib.inf
+
 [LibraryClasses.common]
   BaseCryptLib|CryptoPkg/Library/BaseCryptLib/BaseCryptLib.inf
   CcExitLib|UefiCpuPkg/Library/CcExitLibNull/CcExitLibNull.inf
@@ -637,9 +648,6 @@
   gEfiMdeModulePkgTokenSpaceGuid.PcdSmbiosVersion|0x0208
   gEfiMdeModulePkgTokenSpaceGuid.PcdSmbiosDocRev|0x0
   gUefiOvmfPkgTokenSpaceGuid.PcdQemuSmbiosValidated|FALSE
-
-  # Noexec settings for DXE.
-  gEfiMdeModulePkgTokenSpaceGuid.PcdSetNxForStack|FALSE
 
   # UefiCpuPkg PCDs related to initial AP bringup and general AP management.
   gUefiCpuPkgTokenSpaceGuid.PcdCpuMaxLogicalProcessorNumber|64

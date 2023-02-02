@@ -78,13 +78,6 @@ HandOffToDxeCore (
                    (EFI_PHYSICAL_ADDRESS)(UINTN)GhcbBase,
                    GhcbSize
                    );
-  } else {
-    //
-    // Set NX for stack feature also require PcdDxeIplBuildPageTables be TRUE
-    // for the DxeIpl and the DxeCore are both X64.
-    //
-    ASSERT (PcdGetBool (PcdSetNxForStack) == FALSE);
-    ASSERT (PcdGetBool (PcdCpuStackGuard) == FALSE);
   }
 
   if (FeaturePcdGet (PcdDxeIplBuildPageTables)) {

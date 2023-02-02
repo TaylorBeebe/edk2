@@ -50,7 +50,6 @@
   PeiServicesTablePointerLib
 
 [Pcd]
-  gEfiMdeModulePkgTokenSpaceGuid.PcdCpuStackGuard   ## CONSUMES
   gUefiCpuPkgTokenSpaceGuid.PcdCpuApStackSize       ## CONSUMES
 
 [Ppis]

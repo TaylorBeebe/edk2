@@ -8,6 +8,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 #include "DxeMain.h"
 #include "Image.h"
+#include "MemoryProtectionSupport.h"
 
 //
 // Module Globals
@@ -270,7 +271,16 @@ CoreInitializeImageServices (
 
   InitializeListHead (&mAvailableEmulators);
 
-  ProtectUefiImage (&Image->Info, Image->LoadedImageDevicePath);
+  Status = ProtectUefiImage (&Image->Info, Image->LoadedImageDevicePath);
+
+  // Omit EFI_NOT_READY as it just implies gCPU is not yet installed
+  if (EFI_ERROR (Status) && (Status != EFI_NOT_READY)) {
+    REPORT_STATUS_CODE (
+      EFI_ERROR_CODE | EFI_ERROR_MAJOR,
+      (EFI_SOFTWARE_DXE_CORE | EFI_SW_DXE_CORE_EC_IMAGE_LOAD_FAILURE)
+      );
+  }
+
 
   return Status;
 }
@@ -1458,7 +1468,14 @@ CoreLoadImageCommon (
     }
   }
 
-  ProtectUefiImage (&Image->Info, Image->LoadedImageDevicePath);
+  Status = ProtectUefiImage (&Image->Info, Image->LoadedImageDevicePath);
+  // Set to unload if ProtectUefiImage returned an error other than EFI_NOT_READY
+  // which implies the CPU Arch Protocol has not yet been installed
+  Status = (Status == EFI_NOT_READY) ? EFI_SUCCESS : Status;
+  if (EFI_ERROR (Status)) {
+    goto Done;
+  }
+
 
   //
   // Success.  Return the image handle

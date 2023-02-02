@@ -142,7 +142,7 @@ IsNullDetectionEnabled (
   VOID
   )
 {
-  return ((PcdGet8 (PcdNullPointerDetectionPropertyMask) & BIT0) != 0);
+  return TRUE;
 }
 
 /**
@@ -241,10 +241,8 @@ ToSplitPageTable (
     return TRUE;
   }
 
-  if (FixedPcdGetBool (PcdCpuStackGuard)) {
-    if ((StackBase >= Address) && (StackBase < (Address + Size))) {
-      return TRUE;
-    }
+  if ((StackBase >= Address) && (StackBase < (Address + Size))) {
+    return TRUE;
   }
 
   if (IsSetNxForStack ()) {
@@ -426,9 +424,7 @@ Split2MPageTo4K (
     PageTableEntry->Uint64         = (UINT64)PhysicalAddress4K;
     PageTableEntry->Bits.ReadWrite = 1;
 
-    if ((IsNullDetectionEnabled () && (PhysicalAddress4K == 0)) ||
-        (FixedPcdGetBool (PcdCpuStackGuard) && (PhysicalAddress4K == StackBase)))
-    {
+    if ((IsNullDetectionEnabled () && (PhysicalAddress4K == 0)) || (PhysicalAddress4K == StackBase)) {
       PageTableEntry->Bits.Present = 0;
     } else {
       PageTableEntry->Bits.Present = 1;

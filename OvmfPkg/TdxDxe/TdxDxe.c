@@ -131,8 +131,6 @@ SetPcdSettings (
 
   PcdStatus = PcdSet64S (PcdConfidentialComputingGuestAttr, PlatformInfoHob->PcdConfidentialComputingGuestAttr);
   ASSERT_RETURN_ERROR (PcdStatus);
-  PcdStatus = PcdSetBoolS (PcdSetNxForStack, PlatformInfoHob->PcdSetNxForStack);
-  ASSERT_RETURN_ERROR (PcdStatus);
 
   DEBUG ((
     DEBUG_INFO,

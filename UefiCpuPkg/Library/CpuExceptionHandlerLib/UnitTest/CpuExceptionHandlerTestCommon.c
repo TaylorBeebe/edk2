@@ -743,10 +743,6 @@ TestCpuStackGuardInBspAndAp (
   VOID                            *NewIdtr;
   UINTN                           *CpuStackBaseBuffer;
 
-  if (!PcdGetBool (PcdCpuStackGuard)) {
-    return UNIT_TEST_PASSED;
-  }
-
   //
   // Get MP Service Protocol
   //

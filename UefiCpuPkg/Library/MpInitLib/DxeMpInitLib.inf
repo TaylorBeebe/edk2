@@ -57,6 +57,8 @@
   PcdLib
   CcExitLib
   MicrocodeLib
+  DxeMemoryProtectionHobLib
+
 [LibraryClasses.X64]
   CpuPageTableLib
 
@@ -80,6 +82,5 @@
   gUefiCpuPkgTokenSpaceGuid.PcdCpuApStatusCheckIntervalInMicroSeconds  ## CONSUMES
   gUefiCpuPkgTokenSpaceGuid.PcdGhcbHypervisorFeatures                  ## CONSUMES
   gUefiCpuPkgTokenSpaceGuid.PcdSevEsWorkAreaBase                       ## SOMETIMES_CONSUMES
-  gEfiMdeModulePkgTokenSpaceGuid.PcdCpuStackGuard                      ## CONSUMES
   gEfiMdeModulePkgTokenSpaceGuid.PcdGhcbBase                           ## CONSUMES
   gEfiMdePkgTokenSpaceGuid.PcdConfidentialComputingGuestAttr           ## CONSUMES

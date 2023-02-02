@@ -84,6 +84,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #include <Library/DxeServicesLib.h>
 #include <Library/DebugAgentLib.h>
 #include <Library/CpuExceptionHandlerLib.h>
+#include <Library/DxeMemoryProtectionHobLib.h>
 
 //
 // attributes for reserved memory before it is promoted to system memory
@@ -1588,6 +1589,15 @@ CoreWaitForEvent (
   );
 
 /**
+  Initialize the memory protection special region reporting.
+**/
+VOID
+EFIAPI
+CoreInitializeMemoryProtectionSpecialRegions (
+  VOID
+  );
+
+/**
   Closes an event and frees the event structure.
 
   @param  UserEvent              Event to close
@@ -2735,8 +2745,17 @@ RemoveImageRecord (
 
   @param[in]  LoadedImage              The loaded image protocol
   @param[in]  LoadedImageDevicePath    The loaded image device path protocol
+
+  @retval     EFI_INVALID_PARAMETER   This function was called in SMM or the image
+                                      type has an undefined protection policy
+  @retval     EFI_OUT_OF_RESOURCES    Failure to Allocate()
+  @retval     EFI_UNSUPPORTED         Image type will not be protected in accordance with memory
+                                      protection policy settings
+  @retval     EFI_LOAD_ERROR          The image is unaligned or the code segment count is zero
+  @retval     EFI_SUCCESS             The image was successfully protected or the protection policy
+                                      is PROTECT_IF_ALIGNED_ELSE_ALLOW
 **/
-VOID
+EFI_STATUS
 ProtectUefiImage (
   IN EFI_LOADED_IMAGE_PROTOCOL  *LoadedImage,
   IN EFI_DEVICE_PATH_PROTOCOL   *LoadedImageDevicePath

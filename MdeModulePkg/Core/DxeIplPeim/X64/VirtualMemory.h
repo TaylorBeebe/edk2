@@ -279,6 +279,20 @@ ClearFirst4KPage (
   );
 
 /**
+  Returns true if page zero exists and has not been allocated.
+
+  @param HobStart                  The start of HobList passed to DxeCore.
+
+  @retval TRUE                     Page zero exists and is unallocated
+  @retval FALSE                    Page zero cannot be allocated
+
+**/
+BOOLEAN
+CanUpdatePageZero (
+  IN  VOID  *HobStart
+  );
+
+/**
   Return configure status of NULL pointer detection feature.
 
   @return TRUE   NULL pointer detection feature is enabled

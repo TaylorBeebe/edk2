@@ -10,6 +10,8 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 #include "PiSmmCpuDxeSmm.h"
 
+#include <Library/MmMemoryProtectionHobLib.h>
+
 #define PAGE_TABLE_PAGES  8
 #define ACC_MAX_BIT       BIT3
 
@@ -1097,7 +1099,7 @@ SmiPFHandler (
     //
     // If NULL pointer was just accessed
     //
-    if (((PcdGet8 (PcdNullPointerDetectionPropertyMask) & BIT1) != 0) &&
+    if (gMmMps.NullPointerDetectionPolicy &&
         (PFAddress < EFI_PAGE_SIZE))
     {
       DumpCpuContext (InterruptType, SystemContext);
@@ -1137,6 +1139,8 @@ SmiPFHandler (
 
 Exit:
   ReleaseSpinLock (mPFLock);
+
+  return;
 }
 
 /**
