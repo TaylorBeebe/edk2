@@ -39,6 +39,9 @@
 #include <Library/MemEncryptSevLib.h>
 #include <OvmfPlatforms.h>
 
+#include <Guid/DxeMemoryProtectionSettings.h>
+#include <Guid/MmMemoryProtectionSettings.h>
+
 #include "Platform.h"
 
 EFI_PEI_PPI_DESCRIPTOR  mPpiBootMode[] = {
@@ -79,13 +82,7 @@ NoexecDxeInitialization (
   IN OUT EFI_HOB_PLATFORM_INFO  *PlatformInfoHob
   )
 {
-  RETURN_STATUS  Status;
-
-  Status = PlatformNoexecDxeInitialization (PlatformInfoHob);
-  if (!RETURN_ERROR (Status)) {
-    Status = PcdSetBoolS (PcdSetNxForStack, PlatformInfoHob->PcdSetNxForStack);
-    ASSERT_RETURN_ERROR (Status);
-  }
+  PlatformNoexecDxeInitialization (PlatformInfoHob);
 }
 
 static const UINT8  EmptyFdt[] = {
@@ -334,8 +331,29 @@ InitializePlatform (
   IN CONST EFI_PEI_SERVICES     **PeiServices
   )
 {
-  EFI_HOB_PLATFORM_INFO  *PlatformInfoHob;
-  EFI_STATUS             Status;
+  EFI_HOB_PLATFORM_INFO           *PlatformInfoHob;
+  EFI_STATUS                      Status;
+  DXE_MEMORY_PROTECTION_SETTINGS  DxeSettings;
+  MM_MEMORY_PROTECTION_SETTINGS   MmSettings;
+
+  DxeSettings = (DXE_MEMORY_PROTECTION_SETTINGS)DXE_MEMORY_PROTECTION_SETTINGS_DEBUG;
+  MmSettings  = (MM_MEMORY_PROTECTION_SETTINGS)MM_MEMORY_PROTECTION_SETTINGS_DEBUG;
+  // THE /NXCOMPAT DLL flag cannot be set using non MinGW GCC
+ #ifdef __GNUC__
+  DxeSettings.ImageProtectionPolicy.Fields.BlockImagesWithoutNxFlag = 0;
+ #endif
+
+  BuildGuidDataHob (
+    &gDxeMemoryProtectionSettingsGuid,
+    &DxeSettings,
+    sizeof (DxeSettings)
+    );
+
+  BuildGuidDataHob (
+    &gMmMemoryProtectionSettingsGuid,
+    &MmSettings,
+    sizeof (MmSettings)
+    );
 
   DEBUG ((DEBUG_INFO, "Platform PEIM Loaded\n"));
   PlatformInfoHob = BuildPlatformInfoHob ();
