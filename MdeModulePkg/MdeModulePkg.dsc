@@ -233,7 +233,9 @@
   MdeModulePkg/Library/DebugAgentLibNull/DebugAgentLibNull.inf
   MdeModulePkg/Library/DeviceManagerUiLib/DeviceManagerUiLib.inf
   MdeModulePkg/Library/LockBoxNullLib/LockBoxNullLib.inf
+  MdeModulePkg/Library/GetMemoryProtectionSettingsLib/GetMemoryProtectionSettingsLib.inf
   MdeModulePkg/Library/GetMemoryProtectionSettingsLib/GetMemoryProtectionSettingsLibNull.inf
+  MdeModulePkg/Library/SetMemoryProtectionSettingsLib/SetMemoryProtectionSettingsLib.inf
   MdeModulePkg/Library/SetMemoryProtectionSettingsLib/SetMemoryProtectionSettingsLibNull.inf
   MdeModulePkg/Library/PciHostBridgeLibNull/PciHostBridgeLibNull.inf
   MdeModulePkg/Library/PiSmmCoreSmmServicesTableLib/PiSmmCoreSmmServicesTableLib.inf
