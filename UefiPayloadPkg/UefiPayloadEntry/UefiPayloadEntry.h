@@ -13,6 +13,7 @@
 
 #include <Library/BaseLib.h>
 #include <Library/BaseMemoryLib.h>
+#include <Library/SetMemoryProtectionSettingsLib.h>
 #include <Library/MemoryAllocationLib.h>
 #include <Library/DebugLib.h>
 #include <Library/PeCoffLib.h>
@@ -50,6 +51,8 @@
 #define E820_DISABLED   6
 #define E820_PMEM       7
 #define E820_UNDEFINED  8
+
+MEMORY_PROTECTION_SETTINGS  mMps = { 0 };
 
 /**
   Auto-generated function that calls the library constructors for all of the module's
