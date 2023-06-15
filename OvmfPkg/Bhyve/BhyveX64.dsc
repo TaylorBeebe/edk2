@@ -173,6 +173,8 @@
   MemEncryptTdxLib|OvmfPkg/Library/BaseMemEncryptTdxLib/BaseMemEncryptTdxLib.inf
   PeiHardwareInfoLib|OvmfPkg/Library/HardwareInfoLib/PeiHardwareInfoLib.inf
   DxeHardwareInfoLib|OvmfPkg/Library/HardwareInfoLib/DxeHardwareInfoLib.inf
+  GetMemoryProtectionSettingsLib|MdeModulePkg/Library/GetMemoryProtectionSettingsLib/GetMemoryProtectionSettingsLib.inf
+  SetMemoryProtectionSettingsLib|MdeModulePkg/Library/SetMemoryProtectionSettingsLib/SetMemoryProtectionSettingsLib.inf
 
   CustomizedDisplayLib|MdeModulePkg/Library/CustomizedDisplayLib/CustomizedDisplayLib.inf
   FrameBufferBltLib|MdeModulePkg/Library/FrameBufferBltLib/FrameBufferBltLib.inf
