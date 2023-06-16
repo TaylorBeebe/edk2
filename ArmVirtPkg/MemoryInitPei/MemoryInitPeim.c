@@ -9,6 +9,7 @@
 
 #include <PiPei.h>
 #include <Library/ArmPlatformLib.h>
+#include <Library/SetMemoryProtectionSettingsLib.h>
 #include <Library/DebugLib.h>
 #include <Library/HobLib.h>
 #include <Library/PeimEntryPoint.h>
@@ -76,8 +77,10 @@ InitializeMemory (
   IN CONST EFI_PEI_SERVICES     **PeiServices
   )
 {
-  UINTN       UefiMemoryBase;
-  EFI_STATUS  Status;
+  UINTN                           UefiMemoryBase;
+  EFI_STATUS                      Status;
+  DXE_MEMORY_PROTECTION_SETTINGS  DxeSettings;
+  MM_MEMORY_PROTECTION_SETTINGS   MmSettings;
 
   ASSERT (FixedPcdGet64 (PcdSystemMemoryBase) < (UINT64)MAX_ALLOC_ADDRESS);
 
@@ -99,6 +102,14 @@ InitializeMemory (
              FixedPcdGet32 (PcdSystemMemoryUefiRegionSize)
              );
   ASSERT_EFI_ERROR (Status);
+
+  DxeSettings = DxeMemoryProtectionProfiles[DxeMemoryProtectionSettingsDebug].Settings;
+  MmSettings  = MmMemoryProtectionProfiles[MmMemoryProtectionSettingsDebug].Settings;
+
+  DxeSettings.NullPointerDetection.DisableEndOfDxe = TRUE;
+
+  SetDxeMemoryProtectionSettings (&DxeSettings, DxeMemoryProtectionSettingsDebug);
+  SetMmMemoryProtectionSettings (&MmSettings, MmMemoryProtectionSettingsDebug);
 
   return Status;
 }
