@@ -1020,6 +1020,32 @@ InitializeDxeImageMemoryProtectionPolicy (
 }
 
 /**
+  Mark the HOB list as read-only and non-executable.
+**/
+STATIC
+VOID
+ProtectHobList (
+  VOID
+  )
+{
+  EFI_PEI_HOB_POINTERS  Hob;
+
+  Hob.Raw = GetHobList ();
+
+  // Find the end of the HOB list.
+  while (!END_OF_HOB_LIST (Hob)) {
+    Hob.Raw = GET_NEXT_HOB (Hob);
+  }
+
+  // Protect the HOB list.
+  SetUefiImageMemoryAttributes (
+    (UINTN)gHobList,
+    ALIGN_VALUE (((UINTN)Hob.Raw + GET_HOB_LENGTH (Hob)) - (UINTN)GetHobList (), EFI_PAGE_SIZE),
+    EFI_MEMORY_XP | EFI_MEMORY_RO
+    );
+}
+
+/**
   Mark the page containing the memory protection settings as read-only
   and non-executable.
 **/
@@ -1100,6 +1126,11 @@ MemoryProtectionCpuArchProtocolNotify (
   if (IsDxeImageProtectionActive ()) {
     DEBUG ((DEBUG_INFO, "Applying DXE Image Protection Policy\n"));
     InitializeDxeImageMemoryProtectionPolicy ();
+  }
+
+  // If any memory protections are active, mark the HOB list XP and RO.
+  if (IsDxeMemoryProtectionActive ()) {
+    ProtectHobList ();
   }
 
   DEBUG ((DEBUG_INFO, "Marking the Memory Protection Settings EFI_MEMORY_RP and EFI_MEMORY_XP\n"));
