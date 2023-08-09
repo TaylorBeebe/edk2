@@ -50,6 +50,9 @@ EFI_PEI_PPI_DESCRIPTOR  mPpiBootMode[] = {
   }
 };
 
+#define MEMORY_PROTECTION_PROFILE_FWCFG_FILE \
+  "opt/org.tianocore/MemoryProtectionProfile"
+
 VOID
 MemMapInitialization (
   IN OUT EFI_HOB_PLATFORM_INFO  *PlatformInfoHob
@@ -294,15 +297,8 @@ InitializePlatform (
   EFI_STATUS                      Status;
   DXE_MEMORY_PROTECTION_SETTINGS  DxeSettings;
   MM_MEMORY_PROTECTION_SETTINGS   MmSettings;
-
-  DxeSettings = DxeMemoryProtectionProfiles[DxeMemoryProtectionSettingsDebug].Settings;
-  MmSettings  = MmMemoryProtectionProfiles[MmMemoryProtectionSettingsOff].Settings;
-
-  DxeSettings.NullPointerDetection.DisableEndOfDxe = TRUE;
-  MmSettings.NullPointerDetection.Enabled          = TRUE;
-
-  SetDxeMemoryProtectionSettings (&DxeSettings, DxeMemoryProtectionSettingsDebug);
-  SetMmMemoryProtectionSettings (&MmSettings, MmMemoryProtectionSettingsOff);
+  CHAR8                           String[100];
+  UINTN                           StringSize;
 
   DEBUG ((DEBUG_INFO, "Platform PEIM Loaded\n"));
   PlatformInfoHob = BuildPlatformInfoHob ();
@@ -338,6 +334,37 @@ InitializePlatform (
   }
 
   PublishPeiMemory (PlatformInfoHob);
+
+  StringSize = sizeof (String);
+
+  Status = QemuFwCfgParseString (MEMORY_PROTECTION_PROFILE_FWCFG_FILE, &StringSize, String);
+  if (!EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_INFO, "Setting Memory Protection Profile: %a\n", String));
+    if (AsciiStriCmp (String, "debug") == 0) {
+      DxeSettings = DxeMemoryProtectionProfiles[DxeMemoryProtectionSettingsDebug].Settings;
+      MmSettings  = MmMemoryProtectionProfiles[MmMemoryProtectionSettingsDebug].Settings;
+    } else if (AsciiStriCmp (String, "release") == 0) {
+      DxeSettings = DxeMemoryProtectionProfiles[DxeMemoryProtectionSettingsRelease].Settings;
+      MmSettings  = MmMemoryProtectionProfiles[MmMemoryProtectionSettingsRelease].Settings;
+    } else if (AsciiStriCmp (String, "off") == 0) {
+      DxeSettings = DxeMemoryProtectionProfiles[DxeMemoryProtectionSettingsOff].Settings;
+      MmSettings  = MmMemoryProtectionProfiles[MmMemoryProtectionSettingsOff].Settings;
+    } else {
+      DEBUG ((DEBUG_ERROR, "Invalid memory protection profile: %a\n", String));
+      ASSERT (FALSE);
+    }
+  } else {
+    DxeSettings = DxeMemoryProtectionProfiles[DxeMemoryProtectionSettingsDebug].Settings;
+    MmSettings  = MmMemoryProtectionProfiles[MmMemoryProtectionSettingsOff].Settings;
+  }
+
+  // Always disable NullPointerDetection in EndOfDxe phase for shim compatability
+  DxeSettings.NullPointerDetection.DisableEndOfDxe = TRUE;
+  MmSettings.HeapGuard.PageGuardEnabled            = FALSE;
+  MmSettings.HeapGuard.PoolGuardEnabled            = FALSE;
+
+  SetDxeMemoryProtectionSettings (&DxeSettings, DxeMemoryProtectionSettingsDebug);
+  SetMmMemoryProtectionSettings (&MmSettings, MmMemoryProtectionSettingsOff);
 
   PlatformQemuUc32BaseInitialization (PlatformInfoHob);
 

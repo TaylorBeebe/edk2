@@ -171,6 +171,7 @@ class PlatformBuilder( UefiBuilder, BuildSettingsManager):
         self.env.SetValue("MAKE_STARTUP_NSH", "FALSE", "Default to false")
         self.env.SetValue("QEMU_HEADLESS", "FALSE", "Default to false")
         self.env.SetValue("QEMU_CPUHP_QUIRK", "FALSE", "Default to false")
+        self.env.SetValue("MEMORY_PROTECTION_PROFILE", "DEBUG", "Default to Debug")
         return 0
 
     def PlatformPreBuild(self):
@@ -197,6 +198,13 @@ class PlatformBuilder( UefiBuilder, BuildSettingsManager):
         args += " -global isa-debugcon.iobase=0x402"                        # debug messages out thru virtual io port
         args += " -net none"                                                # turn off network
         args += f" -drive file=fat:rw:{VirtualDrive},format=raw,media=disk" # Mount disk with startup.nsh
+
+        if (self.env.GetValue("MEMORY_PROTECTION_PROFILE").upper() == "RELEASE"):
+            args += " -fw_cfg name=opt/org.tianocore/MemoryProtectionProfile,string=release"
+        elif (self.env.GetValue("MEMORY_PROTECTION_PROFILE").upper() == "DEBUG"):
+            args += " -fw_cfg name=opt/org.tianocore/MemoryProtectionProfile,string=debug"
+        elif (self.env.GetValue("MEMORY_PROTECTION_PROFILE").upper() == "OFF"):
+            args += " -fw_cfg name=opt/org.tianocore/MemoryProtectionProfile,string=off"
 
         if (self.env.GetValue("QEMU_HEADLESS").upper() == "TRUE"):
             args += " -display none"  # no graphics

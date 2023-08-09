@@ -18,8 +18,8 @@ typedef struct {
 
 typedef enum {
   DxeMemoryProtectionSettingsDebug = 0,
-  DxeMemoryProtectionSettingsProduction,
-  DxeMemoryProtectionSettingsProductionNoPageGuards,
+  DxeMemoryProtectionSettingsRelease,
+  DxeMemoryProtectionSettingsReleaseNoPageGuards,
   DxeMemoryProtectionSettingsOff,
   DxeMemoryProtectionSettingsMax
 } DXE_MEMORY_PROTECTION_PROFILE_INDEX;
@@ -32,6 +32,7 @@ typedef struct {
 
 typedef enum {
   MmMemoryProtectionSettingsDebug = 0,
+  MmMemoryProtectionSettingsRelease,
   MmMemoryProtectionSettingsOff,
   MmMemoryProtectionSettingsMax
 } MM_MEMORY_PROTECTION_PROFILE_INDEX;
@@ -39,20 +40,13 @@ typedef enum {
 extern DXE_MEMORY_PROTECTION_PROFILES  DxeMemoryProtectionProfiles[DxeMemoryProtectionSettingsMax];
 extern MM_MEMORY_PROTECTION_PROFILES   MmMemoryProtectionProfiles[MmMemoryProtectionSettingsMax];
 
-// Check if gMps is non-NULL and the version numbers are valid
-#define MPS_VALID(Mps)  ((((MEMORY_PROTECTION_SETTINGS*)Mps) != NULL)                                                              && \
-                         (((MEMORY_PROTECTION_SETTINGS*)Mps)->Mm.StructVersion == MM_MEMORY_PROTECTION_SETTINGS_CURRENT_VERSION)   && \
-                         (((MEMORY_PROTECTION_SETTINGS*)Mps)->Dxe.StructVersion == DXE_MEMORY_PROTECTION_SETTINGS_CURRENT_VERSION) && \
-                         (((MEMORY_PROTECTION_SETTINGS*)Mps)->Mm.Signature == MM_MEMORY_PROTECTION_SIGNATURE)                      && \
-                         (((MEMORY_PROTECTION_SETTINGS*)Mps)->Dxe.Signature == DXE_MEMORY_PROTECTION_SIGNATURE))
-
 /**
-  Prevent further changes to the memory protection settings.
+  Prevent further changes to the memory protection settings via this
+  library API.
 
   @retval EFI_SUCCESS           The memory protection settings are locked.
-  @retval EFI_NOT_STARTED       The memory protection settings have not been allocated.
+  @retval EFI_ABORTED           Unable to get/create the memory protection settings.
   @retval EFI_UNSUPPORTED       NULL implementation called.
-  @retval Others                An error occurred while setting the permissions.
 **/
 EFI_STATUS
 EFIAPI
@@ -69,10 +63,10 @@ LockMemoryProtectionSettings (
   @param[in] ProfileIndex  The index of the memory protection profile to use if DxeMps is NULL.
 
   @retval EFI_SUCCESS           The memory protection HOB was successfully created.
-  @retval EFI_OUT_OF_RESOURCES  There was insufficient memory to create the HOB.
   @retval EFI_INVALID_PARAMETER The ProfileIndex was invalid or the version number of the
                                 input DxeMps was not equal to the version currently present
                                 in the settings.
+  @retval EFI_ABORTED           Unable to get/create the memory protection settings.
   @retval EFI_ACCESS_DENIED     The memory protection settings are locked.
   @retval EFI_UNSUPPORTED       NULL implementation called.
 **/
@@ -96,6 +90,7 @@ SetDxeMemoryProtectionSettings (
   @retval EFI_INVALID_PARAMETER The ProfileIndex was invalid or the version number of the
                                 input MmMps was not equal to the version currently present
                                 in the settings.
+  @retval EFI_ABORTED           Unable to get/create the memory protection settings.
   @retval EFI_ACCESS_DENIED     The memory protection settings are locked.
   @retval EFI_UNSUPPORTED       NULL implementation called.
 **/
@@ -113,10 +108,8 @@ SetMmMemoryProtectionSettings (
 
   @retval EFI_SUCCESS           The memory protection settings were copied
                                 into the input buffer.
-  @retval EFI_ABORTED           The memory protection settings are invalid.
   @retval EFI_INVALID_PARAMETER Mps was NULL.
-  @retval EFI_OUT_OF_RESOURCES  The memory protection settings memory needed
-                                to be allocated but allocation failed.
+  @retval EFI_ABORTED           Unable to get/create the memory protection settings.
   @retval EFI_UNSUPPORTED       NULL implementation called.
 **/
 EFI_STATUS
