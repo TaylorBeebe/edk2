@@ -185,6 +185,8 @@ class PlatformBuilder( UefiBuilder, BuildSettingsManager):
         VirtualDriveBoot = os.path.join(VirtualDrive, "EFI", "BOOT")
         os.makedirs(VirtualDriveBoot, exist_ok=True)
         OutputPath_FV = os.path.join(self.env.GetValue("BUILD_OUTPUT_BASE"), "FV")
+        DxeMemoryProtection = self.env.GetValue("DXE_MEMORY_PROTECTION_PROFILE", "")
+        MmMemoryProtection = self.env.GetValue("MM_MEMORY_PROTECTION_PROFILE", "")
 
         if (self.env.GetValue("QEMU_SKIP") and
             self.env.GetValue("QEMU_SKIP").upper() == "TRUE"):
@@ -208,6 +210,12 @@ class PlatformBuilder( UefiBuilder, BuildSettingsManager):
         args += " -net none"                                                # turn off network
         args += " -smp 4"
         args += f" -drive file=fat:rw:{VirtualDrive},format=raw,media=disk" # Mount disk with startup.nsh
+
+        if (DxeMemoryProtection.lower() != ""):
+            args += " -fw_cfg name=opt/org.tianocore/DxeMemoryProtectionProfile,string=" + DxeMemoryProtection.lower()
+
+        if (MmMemoryProtection.lower() != ""):
+            args += " -fw_cfg name=opt/org.tianocore/MmMemoryProtectionProfile,string=" + MmMemoryProtection.lower()
 
         if (self.env.GetValue("QEMU_HEADLESS").upper() == "TRUE"):
             args += " -display none"  # no graphics
